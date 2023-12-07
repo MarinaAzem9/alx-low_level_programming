@@ -1,52 +1,66 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "lists.h"
-
 /**
- * delete_dnodeint_at_index - deletes the node at index of a
- * dlistint_t linked list
- *
- * @head: head of the list
- * @index: index of the new node
- * Return: 1 if it succeeded, -1 if it failed
+ * create_dnode - creates new node
+ * @n: data of node
+ * @prev: link to prev node
+ * @next: link to next node
+ * Return: pointer to new node
  */
-int delete_dnodeint_at_index(dlistint_t **head, unsigned int index)
+dlistint_t *create_dnode(int n, dlistint_t *prev, dlistint_t *next)
 {
-	dlistint_t *h1;
-	dlistint_t *h2;
-	unsigned int i;
+	dlistint_t *new;
 
-	h1 = *head;
+	new = malloc(sizeof(dlistint_t));
+	if (new == NULL)
+		return (NULL);
+	new->n = n;
+	new->prev = prev;
+	new->next = next;
+	return (new);
+}
+/**
+ * insert_dnodeint_at_index - inserts a new node at a given position
+ * @h: head of doubly-linked list
+ * @idx: index for insertion of new node
+ * @n: data for new node
+ * Return: address of new node or NULL if error
+ */
+dlistint_t *insert_dnodeint_at_index(dlistint_t **h, unsigned int idx, int n)
+{
+	dlistint_t *curr = *h, *localPrev = NULL;
+	unsigned int count = 0;
 
-	if (h1 != NULL)
-		while (h1->prev != NULL)
-			h1 = h1->prev;
-
-	i = 0;
-
-	while (h1 != NULL)
+	if (!h)
+		return (NULL);
+	if (idx == 0) /* insert at list beginning*/
 	{
-		if (i == index)
+		if (!*h)
+			*h = create_dnode(n, NULL, NULL); /*first node*/
+		else
 		{
-			if (i == 0)
-			{
-				*head = h1->next;
-				if (*head != NULL)
-					(*head)->prev = NULL;
-			}
-			else
-			{
-				h2->next = h1->next;
-
-				if (h1->next != NULL)
-					h1->next->prev = h2;
-			}
-
-			free(h1);
-			return (1);
+			(*h)->prev = create_dnode(n, NULL, *h);
+			*h = (*h)->prev;
 		}
-		h2 = h1;
-		h1 = h1->next;
-		i++;
+		return (*h);
 	}
-
-	return (-1);
+	for (curr = *h; curr && (count < idx); curr = curr->next, count++)
+	{
+		localPrev = curr;
+	}
+	if ((count == idx) && (curr == NULL)) /*insert at list end*/
+	{
+		localPrev->next = create_dnode(n, localPrev, NULL);
+		return (localPrev->next);
+	}
+	if ((count < idx) && (curr == NULL))/*idx too high*/
+		return (NULL);
+	if (localPrev != NULL)
+	{       /*insert in middle of list*/
+		localPrev->next = create_dnode(n, localPrev, curr);
+		curr->prev = localPrev->next;
+		return (localPrev->next);
+	}
+	return (NULL); /*should never run*/
 }
